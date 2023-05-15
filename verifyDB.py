@@ -2,7 +2,9 @@
 from flask import Flask, jsonify, request
 
 import sys
-  
+import base64 
+import io
+
 # creating a Flask app
 app = Flask(__name__)
   
@@ -64,6 +66,21 @@ def verifier(filename):
         data, time_taken = verify_helper(filename)
         # final_data = "samples found (desc order of reliability):\n\n" + data
         return jsonify({'Help': "samples found (desc order of reliability):\n\n", 'data': data, 'time taken' : time_taken})
+
+@app.route('/save/image', methods = ['POST'])
+def save_img():
+    # return jsonify(request.json["filename"])
+    filename = request.json["filename"]
+    photo = request.json["image"]
+    # filename = request.data.filename
+    # file = request.files['file']
+    # file.save('/')
+
+    photo1 = photo.replace(" ", "")
+    f = (base64.b64decode(photo1))
+    a = io.BytesIO()
+    with open(filename + ".jpg", "wb") as file:
+        file.write(f)
 
 if __name__ == '__main__':
     app.run(debug = True)
