@@ -52,13 +52,20 @@ def verify_helper(filename):
 
     return result, time_taken
 
+train_acc = 93.4
+test_acc = 91.8
+
 @app.route('/', methods = ['GET', 'POST'])
 def home():
     # if(request.method == 'GET'):
   
     data = "hello worlds"
     return jsonify({'data': data})
-  
+
+
+@app.route('/accuracy', methods = ['GET'])
+def get_accuracy():
+    return jsonify({'Train Accuracy score': str(train_acc), 'Test Accuracy score': str(test_acc)})
 
 @app.route('/verify/<filename>', methods = ['GET'])
 def verifier(filename):
@@ -81,6 +88,8 @@ def save_img():
     a = io.BytesIO()
     with open(filename + ".jpg", "wb") as file:
         file.write(f)
+
+    return jsonify({"Ticket": "20.00"})
 
 if __name__ == '__main__':
     app.run(debug = True)
