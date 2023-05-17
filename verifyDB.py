@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, request
 
 import sys
+import os
 import base64 
 import io
 
@@ -90,6 +91,42 @@ def save_img():
         file.write(f)
 
     return jsonify({"Ticket": "20.00"})
+
+@app.route('/register', methods = ['POST'])
+def register():
+    # return jsonify(request.json["filename"])
+    photo1 = request.json["image1"]
+    photo2 = request.json["image2"]
+    username = request.json["username"]
+    # filename = request.data.filename
+    # file = request.files['file']
+    # file.save('/')
+
+    photo1 = photo1.replace(" ", "")
+    photo2 = photo2.replace(" ", "")
+    f1 = (base64.b64decode(photo1))
+    a1 = io.BytesIO()
+
+    f2 = (base64.b64decode(photo2))
+    a2 = io.BytesIO()
+
+    newpath = "Dataset/" + username
+
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+    
+    filename1 = username + "_1_1"
+    filename2 = username + "_1_2";
+
+    
+    with open(newpath + "/" + filename1 + ".jpg", "wb") as file:
+        file.write(f1)
+
+    with open(newpath + "/" + filename2 + ".jpg", "wb") as file:
+        file.write(f2)
+
+    return jsonify({"server message": "Registration successful"})
 
 if __name__ == '__main__':
     app.run(debug = True)
