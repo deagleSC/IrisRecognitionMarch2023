@@ -1,22 +1,16 @@
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request
 
 import sys
 import os
 import base64 
 import io
 
-# creating a Flask app
 app = Flask(__name__)
   
 from utils.extractandenconding import extractFeature, matchingTemplate
 from time import time
 import argparse
-
-# args
-# parser.add_argument("--filename", type=str,
-#                     help="Image file to verify")
-
 
 def verify_helper(filename):
 
@@ -31,13 +25,11 @@ def verify_helper(filename):
                     
     args = parser.parse_args()
 
-    # timing
     start = time()
     print('\tStart verifying {}\n'.format(filename))
     template, mask, filename = extractFeature(filename)
     result = matchingTemplate(template, mask, args.feature_dir, args.threshold)
 
-    # results 
     if result == -1:
         print('\tNo registered sample.')
     elif result == 0:
@@ -46,20 +38,15 @@ def verify_helper(filename):
         print('\tsamples found (desc order of reliability):'.format(len(result)))
         for res in result:
             print("\t", res)
-    # total time
+
     end = time()
     time_taken = ('\n\tTotal time: {} [s]\n'.format(end - start))
     print ('\n\tTotal time: {} [s]\n'.format(end - start))
 
     return result, time_taken
 
-train_acc = 93.4
-test_acc = 91.8
-
 @app.route('/', methods = ['GET', 'POST'])
 def home():
-    # if(request.method == 'GET'):
-  
     data = "hello worlds"
     return jsonify({'data': data})
 
@@ -72,25 +59,12 @@ def get_accuracy():
 def verifier(filename):
     if(request.method == 'GET'):
         data, time_taken = verify_helper(filename)
-        # final_data = "samples found (desc order of reliability):\n\n" + data
-        # return jsonify({'Help': "samples found (desc order of reliability):\n\n", 'data': data, 'time taken' : time_taken})
+        return jsonify({'Help': "samples found (desc order of reliability):\n\n", 'data': data, 'time taken' : time_taken})
 
-        match_found = "Yes"
-
-        if (data == 0):
-            match_found = "No"
-        else:
-            match_found = "Yes"
-            
-        return render_template('verify.html', match = str(match_found), data=str(data), time=time_taken)
 @app.route('/save/image', methods = ['POST'])
 def save_img():
-    # return jsonify(request.json["filename"])
     filename = request.json["filename"]
     photo = request.json["image"]
-    # filename = request.data.filename
-    # file = request.files['file']
-    # file.save('/')
 
     photo1 = photo.replace(" ", "")
     f = (base64.b64decode(photo1))
@@ -98,37 +72,21 @@ def save_img():
     with open(filename + ".jpg", "wb") as file:
         file.write(f)
 
-    return jsonify({"Status": "Image saved for verification","Ticket Amount": "20.00"})
+    return jsonify({"Ticket": "20.00"})
 
 @app.route('/register', methods = ['POST'])
 def register():
-    # return jsonify(request.json["filename"])
     photo1 = request.json["image1"]
-    # photo2 = request.json["image2"]
+    photo2 = request.json["image2"]
     username = request.json["username"]
-    source = request.json["source"]
-    destination = request.json["destination"]
-    # filename = request.data.filename
-    # file = request.files['file']
-    # file.save('/')
-
-    fareMap = {
-        "Kalighat": 1, 
-        "Dharmatala": 2, 
-        "Howrah": 3, 
-        "Baranagar": 4, 
-        "Phoolbagan": 5
-    }
-
-    fare = abs(fareMap[source] - fareMap[destination]) * 10
 
     photo1 = photo1.replace(" ", "")
-    # photo2 = photo2.replace(" ", "")
+    photo2 = photo2.replace(" ", "")
     f1 = (base64.b64decode(photo1))
     a1 = io.BytesIO()
 
-    # f2 = (base64.b64decode(photo2))
-    # a2 = io.BytesIO()
+    f2 = (base64.b64decode(photo2))
+    a2 = io.BytesIO()
 
     newpath = "Dataset/" + username
 
@@ -137,22 +95,15 @@ def register():
 
     
     filename1 = username + "_1_1"
-    # filename2 = username + "_1_2";
+    filename2 = username + "_1_2";
 
     
     with open(newpath + "/" + filename1 + ".jpg", "wb") as file:
         file.write(f1)
+    with open(newpath + "/" + filename2 + ".jpg", "wb") as file:
+        file.write(f2)
 
-    # with open(newpath + "/" + filename2 + ".jpg", "wb") as file:
-    #     file.write(f2)
-
-    # return jsonify({"username": username, 
-    # "status": "Feature Extraction completed", 
-    # "server message": "Registration successful",
-    # "Ticket": "₹" + str(fare)})
-
-    return render_template("register.html", username=username, message = "Registration successful", 
-    status = "Features extracted", ticket = "₹" + str(fare))
+    return jsonify({"server message": "Registration successful"})
 
 if __name__ == '__main__':
     app.run(debug = True)
